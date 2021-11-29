@@ -13,9 +13,9 @@ const useStyles = makeStyles((theme) => ({
     dataGridContainer: {
 		height: 700,
         width: "950px",
-        "@media (max-width: 950px)": {
-            width: "100%",
-        },
+        // "@media (max-width: 950px)": {
+        //     width: "100%",
+        // },
 	},
 
     appTitle: {
@@ -54,11 +54,11 @@ const useStyles = makeStyles((theme) => ({
         
     },
 	dataGrid: {
-        "@media (max-width: 950px)": {
-            width: "90%",
-            marginRight: "auto",
-            marginLeft: "auto",
-        },
+        // "@media (max-width: 950px)": {
+        //     width: "90%",
+        //     marginRight: "auto",
+        //     marginLeft: "auto",
+        // },
 		"&.MuiDataGrid-root": {
             fontFamily: "'Manrope', sans-serif",
 			color: "var(--deep-blue)",
