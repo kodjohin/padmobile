@@ -3,23 +3,23 @@ import TextField from "@mui/material/TextField";
 import Autocomplete from "@mui/material/Autocomplete";
 import FlexGrid from "./components/FlexGrid";
 import Typography from "@mui/material/Typography";
-import CircularProgress from '@mui/material/CircularProgress';
+import CircularProgress from "@mui/material/CircularProgress";
 
 import useStyles from "./styles";
-import { LABELS, ERRORS, SUCCESS } from "./messages";
+import { LABELS, ERRORS } from "./messages";
 import TransitionAlerts from "./components/TransitionAlerts";
 import { useFetch } from "./hooks/useFetch";
 export const StopContext = createContext("");
 
-let [success, message] = [false, ""];
-const App = () => {
-	// Api URLS to call
-	const STOPS_URL = "https://6130d11c8066ca0017fdaa97.mockapi.io/stops";
-	const BOOK_BASE_URL = "https://6130d11c8066ca0017fdaa97.mockapi.io/book/";
+// Api URLS to call
+const STOPS_URL = "https://6130d11c8066ca0017fdaa97.mockapi.io/stops";
 
+const App = () => {
 	const classes = useStyles();
 	const [stop, setStop] = useState("");
 	const [open, setOpen] = useState(false);
+	const [status, setStatus] = useState("success");
+	const [message, setMessage] = useState("");
 
 	const showAlert = function () {
 		setOpen(true);
@@ -27,36 +27,11 @@ const App = () => {
 	};
 
 	const { data, error, loading } = useFetch(STOPS_URL);
-	if (!loading) {
-		// console.log("**** Getting Stops ****", data);
-		if (error) {
-			// console.log("****  Error ****", error);
-			message = ERRORS.technical_error;
-			showAlert();
-		}
-	}
-
-	const bookTrip = async (tripId) => {
-		try {
-			const res = await fetch(`${BOOK_BASE_URL}${tripId}`, {
-				method: "PUT",
-				headers: {
-					"Content-type": "application/json",
-				},
-			});
-			const data = await res.json();
-			// console.log(data);
-			success = data && data.success;
-			message = success
-				? SUCCESS.booking_success
-				: ERRORS.technical_error + ", " + ERRORS.booking_fail;
-
-			showAlert();
-		} catch (error) {
-			message = ERRORS.technical_error + ", " + ERRORS.booking_fail;
-			showAlert();
-		}
-	};
+	if(!loading && error) {
+		setStatus("error");
+		setMessage(ERRORS.technical_error);
+		showAlert();
+	} 
 
 	return (
 		<StopContext.Provider value={stop}>
@@ -76,25 +51,25 @@ const App = () => {
 					options={!data ? [] : data}
 					onChange={(e, value) => setStop(value)}
 					renderInput={(params) => (
-						<TextField {...params} label={LABELS.choose_stop} 
-						InputProps={{
-							...params.InputProps,
-							endAdornment: (
-							  <>
-								{loading ? <CircularProgress color="inherit" size={20} /> : null}
-								{params.InputProps.endAdornment}
-							  </>
-							),
-						  }}
+						<TextField
+							{...params}
+							label={LABELS.choose_stop}
+							InputProps={{
+								...params.InputProps,
+								endAdornment: (
+									<>
+										{loading ? (
+											<CircularProgress color="inherit" size={20} />
+										) : null}
+										{params.InputProps.endAdornment}
+									</>
+								),
+							}}
 						/>
 					)}
 				/>
-				<TransitionAlerts
-					isOpen={open}
-					severity={success ? "success" : "error"}
-					message={message}
-				/>
-				<FlexGrid onBookTrip={bookTrip} />
+				<TransitionAlerts isOpen={open} severity={status} message={message} />
+				<FlexGrid showAlert={showAlert} setStatus={setStatus} setMessage={setMessage} />
 			</div>
 		</StopContext.Provider>
 	);

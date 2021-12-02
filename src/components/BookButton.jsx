@@ -1,12 +1,39 @@
 import React, { useState } from "react";
 import Button from "@mui/material/Button";
 
-import { LABELS } from "../messages";
 import useStyles from "../styles";
+import { LABELS, ERRORS, SUCCESS } from "../messages";
 
-const BookButton = ({ onBookTrip, id }) => {
+const BOOK_BASE_URL = "https://6130d11c8066ca0017fdaa97.mockapi.io/book/";
+
+const BookButton = ({ id, showAlert, setStatus, setMessage }) => {
 	const classes = useStyles();
 	const [booked, setBooked] = useState(false);
+
+	const bookTrip = async (tripId) => {
+		console.log(tripId)
+		try {
+			const res = await fetch(`${BOOK_BASE_URL}${tripId}`, {
+				method: "PUT",
+				headers: {
+					"Content-type": "application/json",
+				},
+			});
+			const data = await res.json();
+			if (data && data.success) {
+				setStatus("success");
+				setMessage(SUCCESS.booking_success);
+				setBooked(true);
+			} else {
+				setStatus("error");
+				setMessage(ERRORS.technical_error + ", " + ERRORS.booking_fail);
+			}
+		} catch (error) {
+			setStatus("error");
+			setMessage(ERRORS.technical_error + ", " + ERRORS.booking_fail);
+		}
+		showAlert();
+	};
 
 	return (
 		<Button
@@ -14,10 +41,7 @@ const BookButton = ({ onBookTrip, id }) => {
 			disabled={booked}
 			variant="contained"
 			size="small"
-			onClick={() => {
-				setBooked(true);
-				onBookTrip(id);
-			}}
+			onClick={() => bookTrip(id)}
 		>
 			{booked ? LABELS.booked : LABELS.book}
 		</Button>

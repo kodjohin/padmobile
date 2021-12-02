@@ -2,28 +2,26 @@ import React, { useContext } from "react";
 import { DataGrid } from "@mui/x-data-grid";
 import Divider from "@mui/material/Divider";
 
-import { dateToLocalString } from "../utils";
 import useStyles from "../styles";
 import BookButton from "./BookButton";
 import { useFetch } from "../hooks/useFetch";
 import { StopContext } from "../App";
-
+import { dateToLocalString } from "../utils";
 import { ERRORS } from "../messages";
 
-export default function FlexGrid({ onBookTrip }) {
+const TRIPS_URL = "https://6130d11c8066ca0017fdaa97.mockapi.io/trips";
+
+export default function FlexGrid({ showAlert, setStatus, setMessage }) {
 	const classes = useStyles();
-
 	const stop = useContext(StopContext);
+	const TRIP_URL = `${TRIPS_URL}${stop ? `?departureStop=${stop}` : ""}`;
 
-	let TRIPS_URL = "https://6130d11c8066ca0017fdaa97.mockapi.io/trips";
-	TRIPS_URL = `${TRIPS_URL}${stop ? `?departureStop=${stop}` : ""}`;
-
-	const { data, error, loading } = useFetch(TRIPS_URL);
-	if (error) {
-		// console.log("****  Error ****", error);
-		const message = ERRORS.technical_error;
-		// showAlert();
-	}
+	const { data, error, loading } = useFetch(TRIP_URL);
+	if(!loading && error) {
+		setStatus("error");
+		setMessage(ERRORS.technical_error);
+		showAlert();
+	} 
 
 	// define grid headers
 	const columns = [
@@ -96,7 +94,7 @@ export default function FlexGrid({ onBookTrip }) {
 			align: "right",
 			renderCell: (params) => {
 				// TODO: if booked set highlight row background
-				return <BookButton onBookTrip={onBookTrip} id={params.row.id} />;
+				return <BookButton id={params.row.id} showAlert={showAlert} setStatus={setStatus} setMessage={setMessage}/>;
 			},
 		},
 	];
@@ -107,7 +105,7 @@ export default function FlexGrid({ onBookTrip }) {
 				<div style={{ flexGrow: 1 }}>
 					<DataGrid
 						className={classes.dataGrid}
-						rows={!data ? [] : data}
+						rows={!data || data === "Not found" ? [] : data}
 						columns={columns}
 						disableSelectionOnClick
 						loading={loading}
