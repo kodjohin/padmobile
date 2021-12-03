@@ -22,4 +22,5 @@ html, body{
     font-family: 'Manrope', sans-serif;
     background-color: var(--pretented-white);
     color: var(--deep-blue);
+    user-select: none;
 }
